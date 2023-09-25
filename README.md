@@ -1,4 +1,4 @@
-# datamine-scraper
+# The Datamine Scraper
 
 The **Datamine Scraper** (tdmscrape) scrapes project information from the Data Mine Website into a Jupyter Notebook.
 This project is licensed under version 3 (or any later version) of the
