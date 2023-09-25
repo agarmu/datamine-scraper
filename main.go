@@ -16,8 +16,28 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 */
 package main
 
-import "github.com/agarmu/datamine-scraper/cmd"
+import (
+	"fmt"
+
+	"github.com/agarmu/datamine-scraper/cmd"
+	latest "github.com/tcnksm/go-latest"
+)
+
+var myVersion = "1.1.1"
 
 func main() {
-	cmd.Execute()
+	// check for version
+	githubTag := &latest.GithubTag{
+		Owner:             "agarmu",
+		Repository:        "datamine-scraper",
+		FixVersionStrFunc: latest.DeleteFrontV(),
+	}
+	res, err := latest.Check(githubTag, myVersion)
+	if err != nil {
+		fmt.Printf("ERROR: Could not check whether I am up-to-date at %s\n", err)
+	} else if res.Outdated {
+		fmt.Printf("ERROR: You have version %s installed, but the current version is %s. Please update your version of this program.\n", myVersion, res.Current)
+	} else {
+		cmd.Execute()
+	}
 }
