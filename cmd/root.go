@@ -30,7 +30,6 @@ import (
 )
 
 var existSubSubQuestions = false
-var disableTelemetry = false
 var questions []Question
 
 // rootCmd represents the base command when called without any subcommands
@@ -97,7 +96,6 @@ func init() {
 	rootCmd.Flags().BoolVarP(&globalConfig.subsubquestionsOwnCodeBlocks, "sub-sub-questions-own-blocks", "s", false, "sub-sub-questions get their own code blocks and response area")
 	rootCmd.Flags().StringVarP(&globalConfig.name, "name", "n", "", "name to use for document")
 	rootCmd.Flags().IntVarP(&globalConfig.projectNumber, "number", "i", -1, "project number")
-	rootCmd.Flags().BoolVar(&disableTelemetry, "disable-telemetry", false, "disables telementry")
 }
 
 func scrapeURL() ([]Question, error) {
