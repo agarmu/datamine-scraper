@@ -126,53 +126,54 @@ func scrapeURL() ([]Question, error) {
 			q.Desc = strings.TrimSpace(q.Desc)
 		}
 		// get the subquestions, if they exist
+		// var hasSubquestions = true
 		subquestions := question.DOM.Find(".olist ol")
 		if subquestions.Length() < 1 {
 			subquestions = question.DOM.Find(".ulist ul")
 			if subquestions.Length() < 1 {
-				log.Panic("Malformed Subquestions: @", q.Header)
+				// number of subquestions is 0!
+				// hasSubquestions = false
 			}
 		}
 		subquestions = subquestions.First().ChildrenFiltered("li")
-		if subquestions.Length() < 1 {
-			log.Panic("No subquestions: ", subquestions)
+		if subquestions.Length() >= 1 {
+			subquestions.Each(func(i int, s *goquery.Selection) {
+				sq := SubQuestion{
+					Header:          "",
+					Subsubquestions: []string{},
+				}
+				headerParagraph := s.ChildrenFiltered("p")
+				if headerParagraph.Length() != 1 {
+					log.Panicln("Wrong number of subquestions in one container.", s.Text())
+				}
+				header, err := headerParagraph.First().Html()
+				if err != nil {
+					log.Panic(err)
+				}
+				sq.Header = strings.TrimSpace(header)
+				// get subquestions, if any
+				subsubquestions := s.Find(".olist ol")
+				if subsubquestions.Length() < 1 {
+					subsubquestions = s.Find(".ulist ul")
+				}
+				if subsubquestions.Length() == 1 {
+					// there are subquestions. great!
+					subsubquestions := subsubquestions.First().ChildrenFiltered("li")
+					subsubquestions.Each(func(_ int, s *goquery.Selection) {
+						ssqParagraph := s.ChildrenFiltered("p")
+						if ssqParagraph.Length() != 1 {
+							log.Panicln("Wrong number of subquestions in one container.", s.Text())
+						}
+						ssq, err := ssqParagraph.First().Html()
+						if err != nil {
+							log.Panic(err)
+						}
+						sq.Subsubquestions = append(sq.Subsubquestions, strings.TrimSpace(ssq))
+					})
+				}
+				q.Subquestions = append(q.Subquestions, sq)
+			})
 		}
-		subquestions.Each(func(i int, s *goquery.Selection) {
-			sq := SubQuestion{
-				Header:          "",
-				Subsubquestions: []string{},
-			}
-			headerParagraph := s.ChildrenFiltered("p")
-			if headerParagraph.Length() != 1 {
-				log.Panicln("Wrong number of subquestions in one container.", s.Text())
-			}
-			header, err := headerParagraph.First().Html()
-			if err != nil {
-				log.Panic(err)
-			}
-			sq.Header = strings.TrimSpace(header)
-			// get subquestions, if any
-			subsubquestions := s.Find(".olist ol")
-			if subsubquestions.Length() < 1 {
-				subsubquestions = s.Find(".ulist ul")
-			}
-			if subsubquestions.Length() == 1 {
-				// there are subquestions. great!
-				subsubquestions := subsubquestions.First().ChildrenFiltered("li")
-				subsubquestions.Each(func(_ int, s *goquery.Selection) {
-					ssqParagraph := s.ChildrenFiltered("p")
-					if ssqParagraph.Length() != 1 {
-						log.Panicln("Wrong number of subquestions in one container.", s.Text())
-					}
-					ssq, err := ssqParagraph.First().Html()
-					if err != nil {
-						log.Panic(err)
-					}
-					sq.Subsubquestions = append(sq.Subsubquestions, strings.TrimSpace(ssq))
-				})
-			}
-			q.Subquestions = append(q.Subquestions, sq)
-		})
 		questions = append(questions, q)
 	})
 	err := c.Visit(globalConfig.url.String())
