@@ -23,7 +23,7 @@ import (
 	latest "github.com/tcnksm/go-latest"
 )
 
-var myVersion = "1.1.1"
+var myVersion = "1.1.3"
 
 func main() {
 	// check for version
